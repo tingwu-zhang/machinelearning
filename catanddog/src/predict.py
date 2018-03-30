@@ -54,7 +54,7 @@ def predict(path,filename):
         variables_to_restore = variable_average.variables_to_restore()
         saver = tf.train.Saver(variables_to_restore)
 
-        image, label, pixes = piclib.Transpose.decode_from_tfrecords(filename)
+        image, label, pixes = piclib.Transpose.decode_from_tfrecords([filename])
         coord = tf.train.Coordinator()
         init = tf.global_variables_initializer()
 

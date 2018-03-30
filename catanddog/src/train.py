@@ -6,13 +6,13 @@ import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 import piclib.Transpose
 import piclib.common
+import time
 
-
-EXAMPLES_NUM = 20000
-BATCH_SIZE = 50
-LEARNING_RATE_BASE = 0.03
+EXAMPLES_NUM = 16000
+BATCH_SIZE = 30
+LEARNING_RATE_BASE = 0.003
 LEARNING_RATE_DECAY = 0.99
-REGULARAZTION_RATE = 0.0001
+REGULARAZTION_RATE = 0.001
 TRAINING_STEPS = 300000
 MOVING_AVERAGE_DECAY = 0.99
 
@@ -49,7 +49,7 @@ def train(filename):
             EXAMPLES_NUM/BATCH_SIZE,
             LEARNING_RATE_DECAY)
     # train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss, global_step=global_step)
-    train_step = tf.train.AdamOptimizer(1e-4).minimize(loss, global_step=global_step)
+    train_step = tf.train.AdamOptimizer(1e-3).minimize(loss, global_step=global_step)
 
     with tf.control_dependencies([train_step, variable_averages_op]):
         train_op = tf.no_op(name='train')
@@ -75,15 +75,34 @@ def train(filename):
             _, loss_value, step, summary = sess.run([train_op, loss, global_step,merged_summary],
                                             feed_dict={x: reshaped_xs, y_: reshaped_ys})
 
-            if i % 100 == 0:
+            if i % 50 == 0:
                 print("After %d training steps,loss on training batch is %g." % (step, loss_value))
                 saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=global_step)
             writer.add_summary(summary, step)
+            time.sleep(1)
     coord.request_stop()
     coord.join(threads)
 
 def main(argv=None):
-    train("../data/dest/output.tfrecords.train")
+    # train(["../data/dest/output.tfrecords.blur.train1",
+    #        "../data/dest/output.tfrecords.blur.train2",
+    #        "../data/dest/output.tfrecords.flip.train1",
+    #        "../data/dest/output.tfrecords.flip.train2",
+    #        "../data/dest/output.tfrecords.normal.train1",
+    #        "../data/dest/output.tfrecords.normal.train2",
+    #        "../data/dest/output.tfrecords.rotate.train1",
+    #        "../data/dest/output.tfrecords.rotate.train2",
+    #        "../data/dest/output.tfrecords.tb.train1",
+    #        "../data/dest/output.tfrecords.tb.train2",
+    #        "../data/dest/output.tfrecords.lr.train1",
+    #        "../data/dest/output.tfrecords.lr.train2",
+    #        "../data/dest/output.tfrecords.rotate90.train1",
+    #        "../data/dest/output.tfrecords.rotate90.train2"
+    #        ])
+    train([
+           "../data/dest/output.tfrecords.normal.train1",
+           "../data/dest/output.tfrecords.normal.train2"
+           ])
 if __name__ == '__main__':
     tf.app.run()
 

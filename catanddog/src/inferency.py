@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 import tensorflow as tf
+import math
 OUTPUT_NODE = 2
 
 IMAGE_SIZE = 64
+IMAGE_LEN = IMAGE_SIZE * IMAGE_SIZE
 NUM_CHANNELS = 3
 NUM_LABELS = 2
 
 #the depth of the first convlayer1
-CONV1_DEEP = 32
+CONV1_DEEP = 16
 CONV1_SIZE = 3
 
 #the depth of the first convlayer2
-CONV2_DEEP = 64
+CONV2_DEEP = 32
 CONV2_SIZE = 3
 
 #the depth of the first convlayer3
-CONV3_DEEP = 128
+CONV3_DEEP = 64
 CONV3_SIZE = 3
 
 #the depth of the first convlayer4
@@ -43,6 +45,7 @@ def interfence(input_tensor, train, regularizer):
         pool1 = tf.nn.max_pool(relu1, ksize=[1, 2, 2, 1],
                                strides=[1, 2, 2, 1],
                                padding='SAME')
+        # pool1 = tf.nn.lrn(pool1, 4, bias=1., alpha=0.001/9., beta=0.75)
 #layer2
     with tf.variable_scope('layer2-conv1'):
         conv2_weights = tf.get_variable("weight",
@@ -61,6 +64,9 @@ def interfence(input_tensor, train, regularizer):
                                strides=[1, 2, 2, 1], padding='SAME')
 
 
+        # pool2 = tf.nn.lrn(pool2, 4, bias=1., alpha=0.001 / 9., beta=0.75)
+
+
 #layer3
     with tf.variable_scope('layer3-conv1'):
         conv3_weights = tf.get_variable("weight",
@@ -77,7 +83,7 @@ def interfence(input_tensor, train, regularizer):
         pool3 = tf.nn.max_pool(relu3,
                                ksize=[1, 2, 2, 1],
                                strides=[1, 2, 2, 1], padding='SAME')
-
+        # pool3 = tf.nn.lrn(pool3, 4, bias=1., alpha=0.001/9., beta=0.75)
 
 #layer4
     with tf.variable_scope('layer4-conv1'):
@@ -91,6 +97,9 @@ def interfence(input_tensor, train, regularizer):
             pool3, conv4_weights, strides=[1, 1, 1, 1], padding='SAME')
 
         relu4 = tf.nn.relu(tf.nn.bias_add(conv4, conv4_biases))
+
+
+        # relu4 = tf.nn.lrn(relu4, 4, bias=1., alpha=0.001 / 9., beta=0.75)
     with tf.name_scope('layer4-pool1'):
         pool4 = tf.nn.max_pool(relu4,
                                ksize=[1, 2, 2, 1],

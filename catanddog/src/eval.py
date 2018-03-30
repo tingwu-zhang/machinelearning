@@ -6,7 +6,7 @@ import piclib.Transpose
 import numpy as np
 
 
-VALIDATION_NUM = 1000
+VALIDATION_NUM = 1500
 LEARNING_RATE_BASE = 0.5
 LEARNING_RATE_DECAY = 0.99
 REGULARAZTION_RATE = 0.0001
@@ -19,9 +19,8 @@ MODEL_NAME = "model.ckpt"
 
 DEFAULT_LABEL = 0
 DEFAULT_FEATURE = 0.0
-EVAL_INTERVAL_SEC = 10
-FILENAME = "../data/dest/output.tfrecords.validation"
-
+EVAL_INTERVAL_SEC = 30
+FILENAME = "../data/dest/output.tfrecords.normal.validation"
 import numpy as np
 
 # from tensorflow.examples.tutorials.mnist import input_data
@@ -89,7 +88,7 @@ def evalate(filename):
 
 
 def main(argv=None):
-    evalate(FILENAME)
+    evalate([FILENAME])
 
 
 if __name__ == '__main__':
