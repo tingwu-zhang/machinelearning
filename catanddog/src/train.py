@@ -16,7 +16,7 @@ REGULARAZTION_RATE = 0.001
 TRAINING_STEPS = 300000
 MOVING_AVERAGE_DECAY = 0.99
 
-
+MERGE_TEST="/home"
 MODEL_SAVE_PATH = "/home/zhangtx/ml/catanddog/model"
 MODEL_NAME = "model.ckpt"
 
