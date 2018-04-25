@@ -74,9 +74,11 @@ def predict(feature,result):
                     real_all.append(write_real)
 
                 txs_batch = np.transpose(matrix_all)
-                for i in range(FEATURE_NUM-4 ):
+
+                for i in range(FEATURE_NUM ):
                     txs_batch_mean = np.mean(txs_batch[i])
                     txs_batch_std = np.std(txs_batch[i])
+
                     if txs_batch_mean != 0 and txs_batch_std != 0:
                         txs_batch[i] = (txs_batch[i] - txs_batch_mean) / txs_batch_std
                 xs_batch = np.transpose(txs_batch)
@@ -84,7 +86,7 @@ def predict(feature,result):
                 for i in range(BATCH_SIZE):
                     xs_batch[i][0] = xs_batch[i][0]   # dew_point
                     xs_batch[i][1] = xs_batch[i][1]   # temperature
-                    xs_batch[i][2] = xs_batch[i][2] # pressure
+                    xs_batch[i][2] = xs_batch[i][2]   # pressure
                     xs_batch[i][3] = xs_batch[i][3]   # wind_speed
                     xs_batch[i][4] = xs_batch[i][4]   # snow_time
                     xs_batch[i][5] = xs_batch[i][5]   # rain_time
@@ -94,7 +96,7 @@ def predict(feature,result):
                     xs_batch[i][9] = xs_batch[i][9]   # wind_cv
 
 
-                xs_batch = np.reshape(txs_batch, (BATCH_SIZE, FEATURE_NUM))
+                xs_batch = np.reshape(xs_batch, (BATCH_SIZE, FEATURE_NUM))
                 validata_feed = {x: xs_batch}
                 count = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
                 prediction_value = sess.run(prediction, feed_dict=validata_feed)
@@ -103,7 +105,7 @@ def predict(feature,result):
                 for i in range(BATCH_SIZE):
                     writer.writerow((day_all[i][0], hour_all[i][0], prediction_value[i][0] * 100, real_all[i][0]))
                     sum = sum + (prediction_value[i][0] * 100-real_all[i][0])*(prediction_value[i][0] * 100-real_all[i][0])
-                print("Mean square error is %d" % (sum/BATCH_SIZE))
+                print("Mean square error is %e" % (sum/BATCH_SIZE))
 
 
                 coord.request_stop()

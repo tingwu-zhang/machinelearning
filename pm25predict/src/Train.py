@@ -2,8 +2,9 @@
 import os
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 import csv
-BATCH_SIZE = 1000
+BATCH_SIZE = 100
 LEARNING_RATE_BASE = 0.8
 LEARNING_RATE_DECAY = 0.99
 REGULARAZTION_RATE = 0.0001
@@ -63,7 +64,7 @@ def train():
 
     loss = tf.reduce_mean(tf.square(y - y_), name="loss")
     tf.summary.scalar("loss", loss)
-    train = tf.train.GradientDescentOptimizer(0.0001).minimize(loss)
+    train = tf.train.GradientDescentOptimizer(0.001).minimize(loss)
     # train = tf.train.AdamOptimizer(0.01).minimize(loss)
 
 
@@ -101,17 +102,20 @@ def train():
             # txs_batch = np.reshape(xs_batch, (FEATURE_NUM, BATCH_SIZE))
             # txs_batch = np.reshape(xs_batch, (FEATURE_NUM, BATCH_SIZE))
             t_txs_batch = np.transpose(xs_batch)
-            for i in range(FEATURE_NUM-4):
+            conv = np.corrcoef(t_txs_batch)
+            # print conv
+            for i in range(FEATURE_NUM):
                 txs_batch_mean = np.mean(t_txs_batch[i])
                 txs_batch_std = np.std(t_txs_batch[i])
+
                 if txs_batch_mean != 0 and txs_batch_std != 0:
                     t_txs_batch[i] = (t_txs_batch[i]-txs_batch_mean)/txs_batch_std
 
-            # xs_batch = np.reshape(txs_batch, (BATCH_SIZE, FEATURE_NUM))
+
             xs_batch = np.transpose(t_txs_batch)
 
             ys_batch = ys_batch * 0.01
-            for i  in range(BATCH_SIZE):
+            for i in range(BATCH_SIZE):
                 xs_batch[i][0] = xs_batch[i][0]   # dew_point
                 xs_batch[i][1] = xs_batch[i][1]    # temperature
                 xs_batch[i][2] = xs_batch[i][2]   #pressure
@@ -127,6 +131,7 @@ def train():
             feed_dict = {x: xs_batch, y_: ys_batch}
             _, loss_value, summary = sess.run([train, loss, merged_summary],
                                                     feed_dict=feed_dict
+
                                              )
             if count % 100 == 0:
                 print loss_value
@@ -144,9 +149,9 @@ def train():
     coord.join(threads)
     sess.close()
 
-
 def main(argv=None):
     train()
 if __name__ == '__main__':
     tf.app.run()
+
 
