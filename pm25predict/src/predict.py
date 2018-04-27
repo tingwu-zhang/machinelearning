@@ -7,12 +7,12 @@ import csv
 BATCH_SIZE = 5989
 
 MOVING_AVERAGE_DECAY = 0.99
-FEATURE_NUM = 10
+FEATURE_NUM = 11
 
 MODEL_SAVE_PATH = "/home/zhangtx/ml/pm25predict/model"
 MODEL_NAME = "model.ckpt"
 
-DEFAULT_FEATURE = [[''], [0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
+DEFAULT_FEATURE = [[''], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
 # DEFAULT_FEATURE = [[''], [0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0]]
 
 
@@ -22,7 +22,9 @@ SUBMISSION = "../data/train/submission.csv"
 
 def predict(feature,result):
     with tf.Graph().as_default() as g:
-        W = tf.Variable(tf.truncated_normal([FEATURE_NUM, 1], 0.0, 1.0, dtype=tf.float32, name="weight"))
+        # W = tf.Variable(tf.truncated_normal([FEATURE_NUM, 1], 0.0, 1.0, dtype=tf.float32, name="weight"))
+        W = tf.Variable(tf.truncated_normal([FEATURE_NUM, 1], mean=0.0, stddev=0.1, dtype=tf.float32, name="weight"))
+
         b = tf.Variable(tf.zeros([1, 1]), name="b", dtype=tf.float32)
 
         x = tf.placeholder(tf.float32, [None, FEATURE_NUM], name="x-input")
@@ -44,7 +46,7 @@ def predict(feature,result):
 
         train_item = tf.decode_csv(
             value, record_defaults=DEFAULT_FEATURE)
-        features = tf.stack(train_item[2:12])
+        features = tf.stack(train_item[1:12])
 
         day = (train_item[0:1])
         hour = (train_item[1:2])
@@ -80,19 +82,19 @@ def predict(feature,result):
                     if txs_batch_mean != 0 and txs_batch_std != 0:
                         txs_batch[i] = (txs_batch[i] - txs_batch_mean) / txs_batch_std
                 xs_batch = np.transpose(txs_batch)
-                for i in range(BATCH_SIZE):
-                    feature_x = xs_batch
-                    # feature_x = feature_x * 0.1
-                    feature_x[0] = feature_x[0]   # dew_point
-                    feature_x[1] = feature_x[1]   # temperature
-                    feature_x[2] = feature_x[2]   # pressure
-                    feature_x[3] = feature_x[3]   # wind_speed
-                    feature_x[4] = feature_x[4]   # snow_time
-                    feature_x[5] = feature_x[5]   # rain_time
-                    feature_x[6] = feature_x[6]   # wind_ne
-                    feature_x[7] = feature_x[7]   # wind_nw
-                    feature_x[8] = feature_x[8]   # wind_se
-                    feature_x[9] = feature_x[9]   # wind_cv
+                # for i in range(BATCH_SIZE):
+                #     feature_x = xs_batch
+                #     feature_x = feature_x * 0.1
+                    # feature_x[0] = feature_x[0]   # dew_point
+                    # feature_x[1] = feature_x[1]   # temperature
+                    # feature_x[2] = feature_x[2]   # pressure
+                    # feature_x[3] = feature_x[3]   # wind_speed
+                    # feature_x[4] = feature_x[4]   # snow_time
+                    # feature_x[5] = feature_x[5]   # rain_time
+                    # feature_x[6] = feature_x[6]   # wind_ne
+                    # feature_x[7] = feature_x[7]   # wind_nw
+                    # feature_x[8] = feature_x[8]   # wind_se
+                    # feature_x[9] = feature_x[9]   # wind_cv
 
 
                 xs_batch = np.reshape(txs_batch, (BATCH_SIZE, FEATURE_NUM))

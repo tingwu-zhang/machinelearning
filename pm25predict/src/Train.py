@@ -10,7 +10,7 @@ LEARNING_RATE_DECAY = 0.99
 REGULARAZTION_RATE = 0.0001
 TRAINING_STEPS = 40000
 MOVING_AVERAGE_DECAY = 0.99
-FEATURE_NUM = 10
+FEATURE_NUM = 11
 
 MODEL_SAVE_PATH = "/home/zhangtx/ml/pm25predict/model"
 MODEL_NAME = "model.ckpt"
@@ -28,11 +28,9 @@ def read_data(file_queue):
     train_item = tf.decode_csv(value, defaults)
     value = train_item[2:3]
 
-    feature = train_item[3:13]
+    feature = train_item[1:13]
+
     # pdb.set_trace()
-    # feature = []
-    # for i in range(FEATURE_NUM-3):
-    #     feature.append(train_item[3+i])
 
     return feature, value
 
@@ -53,22 +51,21 @@ def create_pipeline(filename, batch_size, num_epochs=None):
 
 
 def train():
-    # W = tf.Variable(tf.random_uniform([10, 1], -1.0, 4.0, dtype=tf.float32), name="weight")
+    # W = tf.Variable(tf.random_uniform([FEATURE_NUM, 1], -1.0, 1.0, dtype=tf.float32), name="weight")
     W = tf.Variable(tf.truncated_normal([FEATURE_NUM, 1], mean=0.0, stddev=0.1, dtype=tf.float32,name="weight"))
     b = tf.Variable(tf.zeros([1, 1]), name="b", dtype=tf.float32)
 
     x = tf.placeholder(tf.float32, [None, FEATURE_NUM], name="x-input")
     y_ = tf.placeholder(tf.float32, [None, 1], name="y-input")
-
-    y = tf.add(tf.matmul(x, W), b)
+    y = tf.abs(tf.add(tf.matmul(x, W), b))
 
     loss = tf.reduce_mean(tf.square(y - y_), name="loss")
     tf.summary.scalar("loss", loss)
-    train = tf.train.GradientDescentOptimizer(0.001).minimize(loss)
+    train = tf.train.GradientDescentOptimizer(0.000001).minimize(loss)
     # train = tf.train.AdamOptimizer(0.01).minimize(loss)
 
 
-    xs, ys = create_pipeline(FILENAME, BATCH_SIZE, num_epochs=2000)
+    xs, ys = create_pipeline(FILENAME, BATCH_SIZE, num_epochs=12000)
 
 
     saver = tf.train.Saver()
@@ -101,9 +98,11 @@ def train():
             # z-score stadardlization
             # txs_batch = np.reshape(xs_batch, (FEATURE_NUM, BATCH_SIZE))
             # txs_batch = np.reshape(xs_batch, (FEATURE_NUM, BATCH_SIZE))
-            t_txs_batch = np.transpose(xs_batch)
-            conv = np.corrcoef(t_txs_batch)
+            xs_batch_tmp = np.delete(xs_batch,[1],axis=1)
+            t_txs_batch = np.transpose(xs_batch_tmp)
+            # conv = np.corrcoef(t_txs_batch)
             # print conv
+
             for i in range(FEATURE_NUM):
                 txs_batch_mean = np.mean(t_txs_batch[i])
                 txs_batch_std = np.std(t_txs_batch[i])
@@ -115,18 +114,18 @@ def train():
             xs_batch = np.transpose(t_txs_batch)
 
             ys_batch = ys_batch * 0.01
-            for i in range(BATCH_SIZE):
-                xs_batch[i][0] = xs_batch[i][0]   # dew_point
-                xs_batch[i][1] = xs_batch[i][1]    # temperature
-                xs_batch[i][2] = xs_batch[i][2]   #pressure
-                xs_batch[i][3] = xs_batch[i][3]      #wind_speed
-                xs_batch[i][4] = xs_batch[i][4]   # snow_time
-                xs_batch[i][5] = xs_batch[i][5]   # rain_time
-                xs_batch[i][6] = xs_batch[i][6]    #wind_ne
-                xs_batch[i][7] = xs_batch[i][7]    #wind_nw
-                xs_batch[i][8] = xs_batch[i][8]   #wind_se
-                xs_batch[i][9] = xs_batch[i][9]      #wind_cv
-            #
+            # for i in range(BATCH_SIZE-4):
+            #     xs_batch[i][0] = xs_batch[i][0]   # dew_point
+            #     xs_batch[i][1] = xs_batch[i][1]    # temperature
+            #     xs_batch[i][2] = xs_batch[i][2]   #pressure
+            #     xs_batch[i][3] = xs_batch[i][3]      #wind_speed
+            #     xs_batch[i][4] = xs_batch[i][4]   # snow_time
+            #     xs_batch[i][5] = xs_batch[i][5]   # rain_time
+            #     xs_batch[i][6] = xs_batch[i][6]    #wind_ne
+            #     xs_batch[i][7] = xs_batch[i][7]    #wind_nw
+            #     xs_batch[i][8] = xs_batch[i][8]   #wind_se
+            #     xs_batch[i][9] = xs_batch[i][9]      #wind_cv
+
             #
             feed_dict = {x: xs_batch, y_: ys_batch}
             _, loss_value, summary = sess.run([train, loss, merged_summary],
